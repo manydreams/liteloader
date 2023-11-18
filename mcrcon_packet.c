@@ -1,18 +1,4 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdint.h>
-#include <string.h>
-
-#define DATA_BUFFSIZE 4096
-
-// rcon packet structure
-typedef struct _rc_packet {
-    int size;
-    int id;
-    int cmd;
-    char data[DATA_BUFFSIZE];
-    // ignoring string2 for now
-} rc_packet;
+#include"mcrcon_packet.h"
 
 rc_packet *packet_build(int id, int cmd, char *s1)
 {

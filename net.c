@@ -1,22 +1,6 @@
-#include<stdio.h>
-#include<stdlib.h>
-#include<stdint.h>
-#include<string.h>
-#include<strings.h>
-#include<signal.h>
-#include<errno.h>
-#include<unistd.h>
-#include<limits.h>
-#include<sys/types.h>
-#include<sys/socket.h>
-#include<netinet/in.h>
-#include<arpa/inet.h>
-#include<netdb.h> 
+#include"net.h"
 
-
-
-int net_connect(const char *host, const char *port)
-{
+int net_init(const char *host, const char *port){
 	int sd;
 
 	struct addrinfo hints;
@@ -63,8 +47,13 @@ int net_connect(const char *host, const char *port)
 	return sd;
 }
 
-void net_close(int sd)
-{
+
+
+
+/*
+close the socket,sd is a socket
+*/
+void net_close(int sd){
     close(sd);
 }
 
@@ -86,8 +75,7 @@ void net_close(int sd)
 // 	return 0;
 // }
 
-int net_clean_incoming(int sd, int size)
-{
+int net_clean_incoming(int sd, int size){
 	char tmp[size];
 	int ret = recv(sd, tmp, size, 0);
 

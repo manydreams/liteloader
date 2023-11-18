@@ -1,11 +1,4 @@
-#include<net.c>
-#include<mcrcon_packet.c>
-
-
-#define ROCN_LOGIN      3
-#define RCON_COMMAND    2
-#define RCON_PID        0xBADC0DE
-
+#include"mcrcon.h"
 
 int net_send_packet(int sd, rc_packet *packet)
 {
@@ -91,7 +84,7 @@ int rcon_auth(int sock, char *passwd)
 	return packet->id == -1 ? 0 : 1;
 }
 
-int rcon_command(int sock, char *command)
+rc_packet *rcon_command(int sock, char *command)
 {
 	rc_packet *packet = packet_build(RCON_PID, RCON_COMMAND, command);
 	if (packet == NULL) {
@@ -106,6 +99,9 @@ int rcon_command(int sock, char *command)
 
 	if (packet->id != RCON_PID)
 		return 0;
-        
-	return 1;
+
+	if (packet->id == RCON_PID)
+		return packet;
+
+	return 0;
 }
