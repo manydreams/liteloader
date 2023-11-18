@@ -68,22 +68,33 @@ void net_close(int sd)
     close(sd);
 }
 
-int net_send(int sd, const uint8_t *buff, size_t size)
+// int net_send(int sd, const uint8_t *buff, size_t size)
+// {
+// 	size_t sent = 0;
+// 	size_t left = size;
+
+// 	while (sent < size) {
+// 		int result = send(sd, (const char *) buff + sent, left, 0);
+
+// 		if (result == -1)
+// 			return -1;
+
+// 		sent += result;
+// 		left -= sent;
+// 	}
+
+// 	return 0;
+// }
+
+int net_clean_incoming(int sd, int size)
 {
-	size_t sent = 0;
-	size_t left = size;
+	char tmp[size];
+	int ret = recv(sd, tmp, size, 0);
 
-	while (sent < size) {
-		int result = send(sd, (const char *) buff + sent, left, 0);
-
-		if (result == -1)
-			return -1;
-
-		sent += result;
-		left -= sent;
+	if(ret == 0) {
+		fprintf(stderr, "Connection lost.\n");
+		return -1;
 	}
 
-	return 0;
+	return ret;
 }
-
-
