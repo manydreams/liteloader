@@ -54,9 +54,6 @@ int net_connect(const char *host, const char *port)
 	if (p == NULL) {
 		/* TODO (Tiiffi): Check why windows does not report errors */
 		fprintf(stderr, "Connection failed.\n");
-		#ifndef _WIN32
-			fprintf(stderr, "Error %d: %s\n", errno, strerror(errno));
-		#endif
 
 		freeaddrinfo(server_info);
 		exit(EXIT_FAILURE);
@@ -71,5 +68,22 @@ void net_close(int sd)
     close(sd);
 }
 
+int net_send(int sd, const uint8_t *buff, size_t size)
+{
+	size_t sent = 0;
+	size_t left = size;
+
+	while (sent < size) {
+		int result = send(sd, (const char *) buff + sent, left, 0);
+
+		if (result == -1)
+			return -1;
+
+		sent += result;
+		left -= sent;
+	}
+
+	return 0;
+}
 
 
