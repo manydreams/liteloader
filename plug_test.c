@@ -13,9 +13,14 @@ int test(void){
         printf("rcon login failed");
         return 1;
     }
-    if((packet = rcon_command(client,""))){
-        printf("%s",packet->data);
+    if((packet = rcon_command(client,"/carpet"))){
+        printf("%s\n",packet->data);
     }
+
+    if((packet = net_recv_packet(client))){
+        printf("%s\n",packet->data);
+    }
+
     return 0;
 }
 
