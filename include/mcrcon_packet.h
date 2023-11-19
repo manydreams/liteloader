@@ -1,9 +1,6 @@
 #ifndef MCRCON_PACKET
 #define MCRCON_PACKET
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdint.h>
-#include <string.h>
+
 
 #define DATA_BUFFSIZE 4096
 

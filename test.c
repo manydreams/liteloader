@@ -1,5 +1,8 @@
 #include"include/mcrcon.h"
+
 #include<dlfcn.h>
+#include<stdio.h>
+
 // #include"net.h"
 // #include"mcrcon_packet.h"
 

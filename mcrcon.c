@@ -1,3 +1,6 @@
+#include<stdio.h>
+#include<sys/socket.h>
+
 #include"include/mcrcon.h"
 
 int net_send_packet(int sd, rc_packet *packet)
