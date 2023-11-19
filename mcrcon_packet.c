@@ -1,4 +1,4 @@
-#include"mcrcon_packet.h"
+#include"include/mcrcon_packet.h"
 
 rc_packet *packet_build(int id, int cmd, char *s1)
 {

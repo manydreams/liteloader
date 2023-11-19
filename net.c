@@ -1,4 +1,4 @@
-#include"net.h"
+#include"include/net.h"
 
 int net_init(const char *host, const char *port){
 	int sd;
