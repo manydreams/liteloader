@@ -10,18 +10,8 @@
 
 
 
-int main()
-{   
-    plugin *plugin_list;
-    if((plugin_list = plugin_list_load())){
-        printf(0,"plugin list load error");
-    }
-    for(plugin *tmp = plugin_list; tmp != NULL; tmp = tmp->next){
-        printf("%s\n",tmp->name);
-    }
-    // plugin_list_free(plugin_list);
-    return 0;
-}
+
+
 
 void plugin_list_free(plugin *head){
     if(head != NULL){
@@ -30,7 +20,6 @@ void plugin_list_free(plugin *head){
     }
     return;
 }
-
 
 void get_name(struct dirent *stdinfo,char **name){
     int size;
@@ -45,8 +34,7 @@ void get_name(struct dirent *stdinfo,char **name){
         memcpy(*name,&stdinfo->d_name,sizeof(char)*size+1);
 }
 
-
-plugin* plugin_list_load()
+plugin* plugin_list_load(char *path)
 {
     DIR *dir;
     struct dirent *stdinfo;
@@ -55,9 +43,10 @@ plugin* plugin_list_load()
     char *name;
     unsigned short size;
 
-    if ((dir = opendir("./plugins")) == 0)
-        printf("read dir failed\n");
+    if ((dir = opendir(path)) == 0){
+        printf("Path not exist\n");
         return NULL;
+    }
     while ((stdinfo = readdir(dir)))
     {
         switch (stdinfo->d_type)
