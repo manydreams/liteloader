@@ -1,4 +1,6 @@
 /.vscode
 /tmp
+/plugins
 test
 plug.so
+plugin_load

@@ -1,43 +1,56 @@
-// #include"include/mcrcon.h"
+#include <stdio.h>
+#include <pthread.h>
+#include <stdlib.h>
 
-#include<dlfcn.h>
-#include<stdio.h>
+int print_message_func(void *ptr);
 
-// #include"net.h"
-// #include"mcrcon_packet.h"
-
-extern int test(void);
-
-int main(){
-    // int client;
-    // // if((client = net_init("172.17.0.2","33001")) == -1){
-    // //     printf("socket init failed");
-    // // }
-    // rc_packet *packet;
-    // client = net_init("172.17.0.2","30010");
-    // if(!rcon_auth(client,"password")){
-    //     printf("rcon login failed\n");
-    //     return 1;
-    // }
-    // if((packet = rcon_command(client,""))){
-    //     printf("%s",packet->data);
-    // }
-
-    void *plugin = dlopen("./plug.so",RTLD_LAZY);
-    if(plugin == NULL){
-        printf("dlopen failed : %s\n",dlerror());
-        return 1;
-    }
-
-    void *plugin_func = dlsym(plugin,"test");
+int init()
+{
+    int tmp1,tmp2;
+    void *retival;
+    pthread_t thread1,thread2;
+    char *message1 = "thread1";
+    char *message2 = "thread2";
     
-    if(plugin_func == NULL){
-        printf("dlsym failed : %s\n",dlerror());
-        return 1;
-    }
+    int ret_thread1,ret_thread2;
+    ret_thread1 = pthread_create(&thread1,NULL,(void *)&print_message_func,(void *)message1);
+    ret_thread2 = pthread_create(&thread2,NULL,(void *)&print_message_func,(void *)message2);
+    
+    if(ret_thread1 == 0)
+        printf("create thread 1 true\n");
+    else
+        printf("create thread 1 false\n");
+    
+    if(ret_thread2 == 0)
+        printf("create thread 2 true\n");
+    else
+        printf("create thread 2 false\n");
+    
+    tmp1 = pthread_join(thread1,&retival);
+    printf("thread 1 return value (retival) is %d\n",(int)retival);
+    printf("thread 1 return value (tmp1) is %d\n",tmp1);
+    
+    if(tmp1 != 0)
+        printf("cannot join with thread 1\n");
+    printf("thread 1 is end\n");
+    
+    tmp2 = pthread_join(thread2,&retival);
+    printf("thread 2 return value (retival) is %d\n",(int)retival);
+    printf("thread 2 return value (tmp2) is %d\n",tmp2);
+    
+    if(tmp2 != 0)
+        printf("cannot join with thread 2\n");
+    printf("thread 2 is end\n");
+    
+    pthread_t self = pthread_self();
+    pthread_detach(self);
+    pthread_exit(NULL);
 
-    test();
+}
 
-    // printf("OK");
-    return 0;
+int print_message_func(void *ptr)
+{
+    for(int i=0;i<5;++i)
+        printf("%s:%d\n",(char*)ptr,i);
+    return 30;
 }

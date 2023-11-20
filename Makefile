@@ -6,3 +6,5 @@ test: %.o test.so Makefile
 
 test.so: test.c Makefile
 	gcc -O3 -fPIC -shared plug_test.c -o plug.so
+
+

@@ -1,26 +1,10 @@
-#include"include/mcrcon.h"
 #include<stdio.h>
+#include<pthread.h>
 
-
-int test(void){
-    int client;
-    // if((client = net_init("172.17.0.2","33001")) == -1){
-    //     printf("socket init failed");
-    // }
-    rc_packet *packet;
-    client = net_init("172.17.0.2","30010");
-    if(!rcon_auth(client,"password")){
-        printf("rcon login failed");
-        return 1;
-    }
-    if((packet = rcon_command(client,"/carpet"))){
-        printf("%s\n",packet->data);
-    }
-
-    if((packet = net_recv_packet(client))){
-        printf("%s\n",packet->data);
-    }
-
-    return 0;
+int init(void *argv){
+    printf("ohhhhhhhh\n");
+    pthread_t self = pthread_self();
+    pthread_detach(self);
+    pthread_exit(NULL);
 }
 
