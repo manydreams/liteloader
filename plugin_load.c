@@ -1,4 +1,4 @@
-#include "include/plugin_load.h"
+#include "include/event.h"
 
 #include <sys/types.h>
 #include <dirent.h>
@@ -101,6 +101,7 @@ void* call_plugin_init(char path[]){
 void plugin_list_free(plugin *head){
     if(head != NULL){
         plugin_list_free(head->next);
+        free(head->name);
         free(head);
     }
     return;

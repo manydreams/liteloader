@@ -1,5 +1,5 @@
-#ifndef DYNARR
-#define DYNARR
+#ifndef DYNARR_INT
+#define DYNARR_INT
 
 #include<stdio.h>
 #include<stdlib.h>

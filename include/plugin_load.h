@@ -1,3 +1,5 @@
+#ifndef PLUGIN_LOAD
+#define PLUGIN_LOAD
 
 typedef unsigned long int pthread_t;
 
@@ -27,3 +29,5 @@ void* call_plugin_init(char path[]);
 plugin* find_plugin_pointer(char *name,plugin *head);
 int open_all_plugin(char *path,plugin *head);
 int open_plugin(char *path,char *name,plugin *head);
+
+#endif
