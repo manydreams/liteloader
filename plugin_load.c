@@ -1,4 +1,4 @@
-#include "include/event.h"
+#include "include/plugin_load.h"
 
 #include <sys/types.h>
 #include <dirent.h>
@@ -9,37 +9,28 @@
 #include <string.h>
 #include <pthread.h>
 
+plugin* plugin_init();
 
 
-int main()
+void get_name(struct dirent *stdinfo, char **name)
 {
-    plugin *list;
-    char *path = "./plugins/";
-    list = plugin_list_load(path);
-    if(open_all_plugin(path,list)){
-        printf("failed");
-    }
-    // usleep(0.001);
-    for(plugin *temp = list; temp != NULL; temp = temp->next){
-        pthread_join(temp->thread,NULL);
-    }
-    return 0;
-}
-
-
-void get_name(struct dirent *stdinfo,char **name){
     int size;
-    for(unsigned short tmp = 0; tmp < stdinfo->d_reclen; tmp++){
+    for (unsigned short tmp = 0; tmp < stdinfo->d_reclen; tmp++)
+    {
         if (stdinfo->d_name[tmp] == 0x00)
-            {
-                size = tmp;
-                break;
-            }    
+        {
+            size = tmp;
+            break;
         }
-        *name = malloc(sizeof(char)*size+1);
-        memcpy(*name,&stdinfo->d_name,sizeof(char)*size+1);
+    }
+    *name = malloc(sizeof(char) * size + 1);
+    memcpy(*name, &stdinfo->d_name, sizeof(char) * size + 1);
 }
 
+/// @brief open the all plugins
+/// @param path the plugin path (folder)
+/// @param head the plugin list head
+/// @return if run failed return 1,else 0
 int open_all_plugin(char *path,plugin *head){
 
     for(plugin *temp = head; temp != NULL; temp = temp->next){
@@ -115,7 +106,10 @@ plugin* plugin_list_load(char *path)
     DIR *dir;
     struct dirent *stdinfo;
     plugin *plugins = NULL;
-    plugins = plugin_add(plugins,"hello.so");
+    char *tmp = malloc(sizeof(char)*128);
+    strcpy(tmp,".init/hello.so");
+
+    plugins = plugin_add(plugins,tmp);
     char *name;
     unsigned short size;
 
@@ -170,10 +164,13 @@ plugin* plugin_add(plugin *head, char *name)
     tmp->end = tmp;
     head->end->next = tmp;
     head->end = tmp;
+    if(tmp->last->flag == 2){
+        tmp->last->flag = 0;
+    }
     return NULL;
 }
 
-plugin *plugin_init()
+plugin* plugin_init()
 {
     plugin *plugin_list = malloc(sizeof(plugin));
     plugin_list->last = NULL;

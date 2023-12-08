@@ -72,24 +72,6 @@ void net_close(int sd){
     close(sd);
 }
 
-// int net_send(int sd, const uint8_t *buff, size_t size)
-// {
-// 	size_t sent = 0;
-// 	size_t left = size;
-
-// 	while (sent < size) {
-// 		int result = send(sd, (const char *) buff + sent, left, 0);
-
-// 		if (result == -1)
-// 			return -1;
-
-// 		sent += result;
-// 		left -= sent;
-// 	}
-
-// 	return 0;
-// }
-
 int net_clean_incoming(int sd, int size){
 	char tmp[size];
 	int ret = recv(sd, tmp, size, 0);

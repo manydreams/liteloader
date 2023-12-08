@@ -23,7 +23,6 @@ typedef struct plugin
 
 void plugin_list_free(plugin *head);
 plugin* plugin_list_load(char *path);
-plugin* plugin_init();
 plugin* plugin_add(plugin *head, char *name);
 void* call_plugin_init(char path[]);
 plugin* find_plugin_pointer(char *name,plugin *head);

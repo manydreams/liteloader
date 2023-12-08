@@ -53,23 +53,3 @@ int query(dyn_arr_int arr,int select){
     int *p = arr.arr;
     return p[select];
 }
-
-int main(){
-    dyn_arr_int my_arr;
-    my_arr = init((int[]){1,2,3,4,5},5);
-    my_arr.insert_end(&my_arr,6);
-    my_arr.insert_end(&my_arr,7);
-    my_arr.insert_end(&my_arr,8);
-    my_arr.insert_end(&my_arr,9);
-    my_arr.insert_end(&my_arr,10);
-    for (int i = 11; i<=20 ; i++ ){
-        my_arr.insert_end(&my_arr,i);
-    }
-    // for(int i = 11; i<=100100; i++){
-    //     my_arr.delet_end(&my_arr);
-    // }
-    for (int i = 0; i < my_arr.size; i++){
-        printf("%d\n",my_arr.arr[i]);
-    }
-    // for(;;);
-}

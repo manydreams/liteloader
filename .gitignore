@@ -8,3 +8,5 @@ event
 file_read
 test.txt
 2023-10-28-4.log
+plugin
+print.sh

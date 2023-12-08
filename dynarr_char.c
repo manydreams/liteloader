@@ -58,22 +58,3 @@ char query(dyn_arr_char arr,int select){
     char *p = arr.arr;
     return p[select];
 }
-
-int main(){
-    dyn_arr_char my_arr;
-    my_arr = init("abcd",4);
-    my_arr.insert_end(&my_arr,"e",1);
-    // my_arr.insert_end(&my_arr,7);
-    // my_arr.insert_end(&my_arr,8);
-    // my_arr.insert_end(&my_arr,9);
-    // my_arr.insert_end(&my_arr,10);
-    // for (int i = 11; i<=20 ; i++ ){
-    //     my_arr.insert_end(&my_arr,i);
-    // }
-
-    my_arr.delet_end(&my_arr);
-    
-    printf("%s",my_arr.arr);
-
-    // for(;;);
-}
