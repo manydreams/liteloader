@@ -1,4 +1,5 @@
 #include "include/plugin_load.h"
+#include "include/thread_pool.h"
 
 #include <sys/types.h>
 #include <dirent.h>
@@ -9,10 +10,7 @@
 #include <string.h>
 #include <pthread.h>
 
-plugin* plugin_init();
-
-
-void get_name(struct dirent *stdinfo, char **name)
+static void get_name(struct dirent *stdinfo, char **name)
 {
     int size;
     for (unsigned short tmp = 0; tmp < stdinfo->d_reclen; tmp++)
@@ -27,156 +25,138 @@ void get_name(struct dirent *stdinfo, char **name)
     memcpy(*name, &stdinfo->d_name, sizeof(char) * size + 1);
 }
 
-/// @brief open the all plugins
-/// @param path the plugin path (folder)
-/// @param head the plugin list head
-/// @return if run failed return 1,else 0
-int open_all_plugin(char *path,plugin *head){
-
-    for(plugin *temp = head; temp != NULL; temp = temp->next){
-        char tmp[128];
-        strcpy(tmp,path);
-        strcat(tmp,temp->name);
-        void (*init)(void*) = call_plugin_init(tmp);
-        if(pthread_create(&head->thread,NULL,(void *)init,NULL)){
-            printf("open %s failed\n",tmp);
-            return 1;
-        }
-    }
-
-    return 0;
-}
-
-
-int open_plugin(char *path,char *name,plugin *head){
-
-    head = find_plugin_pointer(name,head);
-    char tmp[128];
-    strcpy(tmp,path);
-    strcat(tmp,name);
-    void (*init)(void*) = call_plugin_init(tmp);
-    if(pthread_create(&head->thread,NULL,(void *)init,NULL)){
-        printf("open %s failed\n",tmp);
-        return 1;
-    }
-    return 0;
-}
-
-plugin* find_plugin_pointer(char *name,plugin *head){
-    plugin* tmp;
-    for(tmp = head; tmp != NULL; tmp = tmp->next){
-        if(tmp->name == name) break;
-    }
-    if(tmp == NULL){
-        printf("can't find %s\n",name);
-        return NULL;
-    }
-    return tmp;
-}
-
-void* call_plugin_init(char path[]){
-    void *plugin = dlopen(path,RTLD_LAZY);
-    if(plugin == NULL){
-        printf("dlopen failed : %s\n",dlerror());
-        return NULL;
-    }
-
-    void (*init)(void) = dlsym(plugin,"init"); 
-    if(init == NULL){
-        printf("dlsym failed : %s\n",dlerror());
-        return NULL;
-    }
-    return init;
-}
-
-void plugin_list_free(plugin *head){
-    if(head != NULL){
-        plugin_list_free(head->next);
-        free(head->name);
-        free(head);
-    }
-    return;
-}
-
-/// @brief load the plugins' list
-/// @param path     --->path of plugins
-/// @return pointer --->the plugins' list head pointer
-plugin* plugin_list_load(char *path)
+int plugin_list_load(plugin_t **head, char *path)
 {
     DIR *dir;
     struct dirent *stdinfo;
-    plugin *plugins = NULL;
-    char *tmp = malloc(sizeof(char)*128);
-    strcpy(tmp,".init/hello.so");
+    plugin_t *plugins = NULL;
 
-    plugins = plugin_add(plugins,tmp);
     char *name;
-    unsigned short size;
 
-    if ((dir = opendir(path)) == 0){
+    if ((dir = opendir(path)) == 0)
+    {
         printf("Path not exist\n");
-        return NULL;
+        return -1;
     }
     while ((stdinfo = readdir(dir)))
     {
         switch (stdinfo->d_type)
         {
         case DT_REG: // 普通文件
-            get_name(stdinfo,&name);
-            plugin_add(plugins,name);
+            get_name(stdinfo, &name);
+            plugin_load(&plugins, name);
             break;
         default:
-            // man readdir
-            break;
+            continue;
         }
     }
 
     closedir(dir); // 关闭目录指针
-    return plugins;
+
+    (*head) = plugins;
+    return 0;
 }
 
-/*
-If head is NULL , this func will create a plugin struct and the struct be used as head,
-it will return head
+int plugin_load(plugin_t **head, char *name)
+{
+    plugin_t *tmp = malloc(sizeof(plugin_t));
+    if (tmp == NULL)
+    {
+        return -1;
+    }
+    tmp->name = name;
+    tmp->next = NULL;
+    if ((*head) == NULL)
+    {
+        tmp->id = 0;
+        tmp->end = tmp;
+        (*head) = tmp;
+    }
+    else
+    {
+        tmp->id = (*head)->end->id + 1;
+        tmp->end = NULL;
 
-Else , it will return NULL and let the head->next = new plugin's address
-*/
-plugin* plugin_add(plugin *head, char *name)
+        (*head)->end->next = tmp;
+        (*head)->end = tmp;
+    }
+
+    char path[128] = "./plugins/";
+    strcat((char *)&path, tmp->name);
+    tmp->dllib = dlopen(path, RTLD_NOW);
+    if (!tmp->dllib)
+    {
+        return -1;
+    }
+
+    return 0;
+}
+
+int plugin_list_unload(plugin_t *head)
+{
+    plugin_t *tmp;
+    do
+    {
+        tmp = head;
+        head = head->next;
+        if (dlclose(tmp->dllib))
+        {
+            printf("%s\n", dlerror);
+            return -1;
+        }
+        free(tmp->name);
+        free(tmp);
+    } while (head);
+}
+
+int plugin_unload(plugin_t *head, char *name)
+{
+    plugin_t *tmp;
+    if (!strcmp(head->name, name))
+    {
+        goto start;
+    }
+    for (; head != NULL && strcmp(head->name, name); head = head->next)
+    {
+        if (!strcmp(head->next->name, name))
+        {
+            tmp = head;
+        }
+    }
+start:
+    tmp = head;
+    head = head->next;
+    if (dlclose(tmp->dllib))
+    {
+        printf("%s\n", dlerror);
+        return -1;
+    }
+    free(tmp->name);
+    free(tmp);
+
+    return 0;
+}
+
+int plugin_func(plugin_t *head, thread_pool_t *tpool, char *name, char *func_name, void *args)
 {
 
     if (head == NULL)
     {
-        plugin *tmp = plugin_init();
-        tmp->id = 0;
-        tmp->name = name;
-        tmp->flag = 1;
-        tmp->head = tmp;
-        tmp->end = tmp;
-        return tmp;
+        return -1;
     }
 
-    plugin *tmp = plugin_init();
-    tmp->id = head->end->id+1;
-    tmp->name = name;
-    tmp->last = head->end;
-    tmp->flag = 2;
-    tmp->head = head;
-    tmp->end = tmp;
-    head->end->next = tmp;
-    head->end = tmp;
-    if(tmp->last->flag == 2){
-        tmp->last->flag = 0;
+    for (; strcmp(head->name, name) && head != NULL; head = head->next)
+        ;
+    void *(*func)(void *) = dlsym(head->dllib, func_name);
+    if (!func)
+    {
+        return -1;
     }
-    return NULL;
+    if (thread_pool_add_work(tpool, func, args))
+    {
+        return -1;
+    }
+
+    return 0;
 }
 
-plugin* plugin_init()
-{
-    plugin *plugin_list = malloc(sizeof(plugin));
-    plugin_list->last = NULL;
-    plugin_list->next = NULL;
-    plugin_list->head = NULL;
-    plugin_list->end = NULL;
-    plugin_list->flag = 0;
-    return plugin_list;
-}

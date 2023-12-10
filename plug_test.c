@@ -1,10 +1,15 @@
-#include<stdio.h>
-#include<pthread.h>
+// #define __GNUC__
 
-int init(void *argv){
-    printf("ohhhhhhhh\n");
-    pthread_t self = pthread_self();
-    pthread_detach(self);
-    pthread_exit(NULL);
+#include<stdio.h>
+#include<x86_64-linux-gnu/sys/cdefs.h>
+
+static int i = 0;
+
+void __attribute__((constructor)) plugin_init(){
+    printf("load%d\n",i);
+    i++;
 }
 
+int __attribute__((destructor)) plugin_fini(){
+    printf("unload\n");
+}

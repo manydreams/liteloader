@@ -1,32 +1,29 @@
 #ifndef PLUGIN_LOAD
 #define PLUGIN_LOAD
 
+typedef struct thread_pool thread_pool_t;
+
 typedef unsigned long int pthread_t;
 
-//if flag = 1,it's head
-//if flag = 2,it's end
-//default falg = 0
 typedef struct plugin
 {
-    struct plugin *head;
     struct plugin *end;
-    struct plugin *last;
     struct plugin *next;
-    int flag;
     short id;
     char *name;
-    pthread_t thread;
-
-}plugin;
-
+    void *dllib;
+}plugin_t;
 
 
-void plugin_list_free(plugin *head);
-plugin* plugin_list_load(char *path);
-plugin* plugin_add(plugin *head, char *name);
-void* call_plugin_init(char path[]);
-plugin* find_plugin_pointer(char *name,plugin *head);
-int open_all_plugin(char *path,plugin *head);
-int open_plugin(char *path,char *name,plugin *head);
+
+int plugin_list_load(plugin_t **head, char *path);
+
+int plugin_load(plugin_t **head, char *name);
+
+int plugin_list_unload(plugin_t *head);
+
+int plugin_unload(plugin_t *head, char *name);
+
+int plugin_func(plugin_t *head, thread_pool_t *tpool, char *name, char *func_name, void *args);
 
 #endif

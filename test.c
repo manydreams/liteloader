@@ -4,9 +4,10 @@
 #include<wait.h>
 
 // #include "include/mcrcon.h"
+#include"include/plugin_load.h"
 #include"include/thread_pool.h"
-
-// int a(char *command)
+#include"include/event.h"
+// int a (char *command)
 // {
 //     int sock = net_init("169.0.0.2","30010");
 //     rcon_auth(sock,"password");
@@ -35,27 +36,45 @@
     
 // }
 
-void t(void *a){
-    int *tmp = (int*)a;
-    printf("hello thread pool, %d\n",*tmp);
-}
+// void t(void *a){
+//     int *tmp = (int*)a;
+//     printf("hello thread pool, %d\n",*tmp);
+// }
 
 int main(int argc, char const *argv[])
 {
-    thread_pool_t *pool = NULL;
-    thread_pool_create(&pool,5);
+    // thread_pool_t *pool = NULL;
+    // thread_pool_create(&pool,5);
 
-    // int j = 0;
-    // int *k = &j;
-    for (int i = 0; i < 10; i++)
-    {
-        thread_pool_add_work(pool,(void*)t,(void*)&i);
-        // usleep(0.00000000001);
-    }
+    // // int j = 0;
+    // // int *k = &j;
+    // for (int i = 0; i < 10; i++)
+    // {
+    //     thread_pool_add_work(pool,(void*)t,(void*)&i);
+    //     usleep(0.0);
+    // }
     // thread_pool_quit(pool);
-    while(pool->works_head != NULL){
-        usleep(0.001);
+    // thread_pool_delet(pool);
+    plugin_t *plg = NULL;
+
+    thread_pool_t *tpool = NULL;
+
+    thread_pool_create(&tpool,1);
+
+    if (plugin_list_load(&plg,"./plugins/")){
+        printf("error");
     }
-    thread_pool_delet(pool);
+
+    plugin_func(plg,tpool,"test.so","plugin_init",NULL);
+
+    // thread_pool_quit(tpool);
+
+    // thread_pool_delet(tpool);
+
+    // plugin_unload(plg,"test.so");
+
+    event_broadcast_t *event_bd = NULL;
+    event_register(&event_bd,"player_said",plg);
+    event_register(&event_bd,"player_left",plg->next);
     return 0;
 }

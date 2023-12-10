@@ -1,6 +1,7 @@
 #include "include/thread_pool.h"
 
-#include <stdlib.h>
+#include<stdlib.h>
+#include<unistd.h>
 
 static void *thread_run(void *args)
 {
@@ -67,18 +68,11 @@ int thread_pool_create(thread_pool_t **pool, int max_thread_num)
     return 0;
 }
 
-int thread_pool_quit(thread_pool_t *pool)(
-    
-    if (!pool)
-    {
-        return -1;
-    }
-    
-    
+int thread_pool_quit(thread_pool_t *pool){
     while(pool->works_head != NULL){
         usleep(0.001);
     }
-)
+}
 
 int thread_pool_delet(thread_pool_t *pool){
     if (!pool)
