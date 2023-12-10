@@ -41,6 +41,20 @@
 //     printf("hello thread pool, %d\n",*tmp);
 // }
 
+void* a(void* tmp){
+    printf("hello event a\n");
+    event_t *load = (event_t*)tmp;
+    load->time = 1;
+    return NULL;
+}
+
+void* b(void* tmp){
+    printf("hello event b\n");
+    event_t *load = (event_t*)tmp;
+    load->time = 1;
+    return NULL;
+}
+
 int main(int argc, char const *argv[])
 {
     // thread_pool_t *pool = NULL;
@@ -59,7 +73,7 @@ int main(int argc, char const *argv[])
 
     thread_pool_t *tpool = NULL;
 
-    thread_pool_create(&tpool,1);
+    thread_pool_create(&tpool,4);
 
     if (plugin_list_load(&plg,"./plugins/")){
         printf("error");
@@ -67,14 +81,23 @@ int main(int argc, char const *argv[])
 
     plugin_func(plg,tpool,"test.so","plugin_init",NULL);
 
-    // thread_pool_quit(tpool);
-
-    // thread_pool_delet(tpool);
-
-    // plugin_unload(plg,"test.so");
+    
 
     event_broadcast_t *event_bd = NULL;
-    event_register(&event_bd,"player_said",plg);
-    event_register(&event_bd,"player_left",plg->next);
+    event_register(&event_bd,"plugin_init",plg,&a);
+    event_register(&event_bd,"plugin_fini",plg->next,&b);
+    
+    event_broadcast_get(event_bd,tpool);
+
+    event_broadcast_call(event_bd,tpool);
+
+    event_deregister(&event_bd,"plugin_fini","testcopy.so");
+
+
+    thread_pool_quit(tpool);
+
+    thread_pool_delet(tpool);
+
+    plugin_list_unload(plg);
     return 0;
 }
